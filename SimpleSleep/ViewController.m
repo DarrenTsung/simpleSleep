@@ -282,7 +282,7 @@ typedef enum {
     if (!_beingTouched)
     {
         CGFloat vel;
-        CGFloat constVel = 4.0f;
+        CGFloat constVel = 3.0f;
         
         if ((_slidingTo == RIGHT || _lerpPosition < -0.5f) && _currentIndex < [_timeOffsets count]-1)
             vel = -constVel;
@@ -360,19 +360,19 @@ typedef enum {
     
     //NSLog(@"Minute: %ld || lerp_pos:%f", (long)minutesForLerpPosition, _lerpPosition);
     
-    topColorMinute = minutesForLerpPosition - 30.0f;
-    if (topColorMinute > minutesInDay) {
-        topColorMinute %= minutesInDay;
-    }
-    else if (topColorMinute < 0) {
-        topColorMinute = minutesInDay - topColorMinute;
-    }
-    bottomColorMinute = minutesForLerpPosition + 30.0f;
+    bottomColorMinute = minutesForLerpPosition - 30.0f;
     if (bottomColorMinute > minutesInDay) {
         bottomColorMinute %= minutesInDay;
     }
     else if (bottomColorMinute < 0) {
         bottomColorMinute = minutesInDay - bottomColorMinute;
+    }
+    topColorMinute = minutesForLerpPosition + 30.0f;
+    if (topColorMinute > minutesInDay) {
+        topColorMinute %= minutesInDay;
+    }
+    else if (topColorMinute < 0) {
+        topColorMinute = minutesInDay - topColorMinute;
     }
     
     UIColor *bottomColor = [self colorForMinuteValue:bottomColorMinute];

@@ -21,13 +21,13 @@
     // create sun
     sun = [SKSpriteNode spriteNodeWithImageNamed:@"sun.png"];
     [self setRelativePosition:CGPointMake(0.5f, 0.5f) forSpriteNode:sun];
-    sun.alpha = 0.7f;
+    sun.alpha = 0.8f;
     [self addChild:sun];
     
     // create moon
     moon = [SKSpriteNode spriteNodeWithImageNamed:@"moon.png"];
     [self setRelativePosition:CGPointMake(0.5f, 0.5f) forSpriteNode:moon];
-    moon.alpha = 0.7f;
+    moon.alpha = 0.8f;
     [self addChild:moon];
     
     gradientNode = [SKSpriteNode spriteNodeWithColor:[UIColor blackColor] size:size];
@@ -52,8 +52,8 @@
     {
         CGFloat lerpedValue = ((CGFloat)minuteValue - (13.0f*60.0f))/(6.0f*60.0f);
         
-        CGFloat x = (lerpedValue + 1.0f)/2.0f;
-        CGFloat y = 1.0f - (lerpedValue*lerpedValue + 0.2);
+        CGFloat x = 1.6f*(lerpedValue + 1.0f)/2.0f - 0.3f;
+        CGFloat y = 0.8f - ((lerpedValue*lerpedValue) + 0.2);
         
         //NSLog(@"With minuteValue:%d, sun is at (%f, %f)", minuteValue, x, y);
         
@@ -74,8 +74,8 @@
     {
         CGFloat lerpedValue = ((CGFloat)moonMinuteValue - (1.5f*60.0f))/(3.5f*60.0f);
         
-        CGFloat x = (lerpedValue + 1.0f)/2.0f;
-        CGFloat y = 1.0f - (lerpedValue*lerpedValue + 0.2);
+        CGFloat x = 1.6f*(lerpedValue + 1.0f)/2.0f - 0.3f;
+        CGFloat y = 0.8f - (lerpedValue*lerpedValue + 0.2);
         
         //NSLog(@"With minuteValue:%d, sun is at (%f, %f)", minuteValue, x, y);
         
