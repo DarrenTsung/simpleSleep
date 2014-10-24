@@ -41,6 +41,10 @@ typedef enum {
 @property (assign, readwrite) CGPoint startingTouchPosition;
 @property (assign, readwrite) double startingTouchTime;
 
+@property (strong, readwrite) NSArray *colorDataArray;
+
+@property (strong, readwrite) CAGradientLayer *gradient;
+
 @property (strong, readwrite) UIView *sun;
 
 @property (assign, readwrite) bool beingTouched;
@@ -57,6 +61,7 @@ typedef enum {
     _lerpPosition = 0.0f;
     _slidingTo = NONE;
     
+    [self readColorData];
     [self scheduleUpdates];
     [self createSun];
     [self createGradientBackground];
@@ -70,27 +75,112 @@ typedef enum {
     _updateTimer = [NSTimer scheduledTimerWithTimeInterval:PSUEDO_DELTA target:self selector:@selector(update:) userInfo:nil repeats:YES];
 }
 
+- (void)readColorData
+{
+    _colorDataArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ColorMapping" ofType:@"plist"]];
+    
+    for (NSArray *colorData in _colorDataArray)
+    {
+        NSInteger time = [[colorData objectAtIndex:0] integerValue];
+        NSArray *colors = [colorData objectAtIndex:1];
+    }
+}
+
+- (UIColor *)colorForMinuteValue:(NSInteger)minuteValue
+{
+    NSInteger highestBelow = -1, lowestAbove = -1;
+    UIColor *highestBelowColor, *lowestAboveColor;
+    
+    for (NSArray *colorData in _colorDataArray)
+    {
+        NSInteger time = [[colorData objectAtIndex:0] integerValue];
+        NSArray *colors = [colorData objectAtIndex:1];
+        
+        if (time < minuteValue && (highestBelow == -1 || time > highestBelow))
+        {
+            highestBelow = time;
+            highestBelowColor = [UIColor colorWithRed:[[colors objectAtIndex:0] floatValue]/255.0f
+                                                green:[[colors objectAtIndex:1] floatValue]/255.0f
+                                                 blue:[[colors objectAtIndex:2] floatValue]/255.0f alpha:1.0f];
+        }
+        else if (time > minuteValue && (lowestAbove == -1 || time < lowestAbove))
+        {
+            lowestAbove = time;
+            lowestAboveColor = [UIColor colorWithRed:[[colors objectAtIndex:0] floatValue]/255.0f
+                                               green:[[colors objectAtIndex:1] floatValue]/255.0f
+                                                blue:[[colors objectAtIndex:2] floatValue]/255.0f alpha:1.0f];
+        }
+    }
+    
+    // if we didn't find a time lower than the minuteValue, go to the highest time (last object in array)
+    if (highestBelow == -1)
+    {
+        NSArray *colorData = [_colorDataArray objectAtIndex:[_colorDataArray count]-1];
+        NSInteger time = [[colorData objectAtIndex:0] integerValue];
+        NSArray *colors = [colorData objectAtIndex:1];
+        
+        highestBelow = time - 24*60;
+        highestBelowColor = [UIColor colorWithRed:[[colors objectAtIndex:0] floatValue]/255.0f
+                                            green:[[colors objectAtIndex:1] floatValue]/255.0f
+                                             blue:[[colors objectAtIndex:2] floatValue]/255.0f alpha:1.0f];
+    }
+    
+    if (lowestAbove == -1)
+    {
+        NSArray *colorData = [_colorDataArray objectAtIndex:0];
+        NSInteger time = [[colorData objectAtIndex:0] integerValue];
+        NSArray *colors = [colorData objectAtIndex:1];
+        
+        lowestAbove = 24*60 + time;
+        lowestAboveColor = [UIColor colorWithRed:[[colors objectAtIndex:0] floatValue]/255.0f
+                                           green:[[colors objectAtIndex:1] floatValue]/255.0f
+                                            blue:[[colors objectAtIndex:2] floatValue]/255.0f alpha:1.0f];
+    }
+    
+    CGFloat lerpedValue = ((CGFloat)minuteValue - (CGFloat)highestBelow)/((CGFloat)lowestAbove - (CGFloat)highestBelow);
+    
+    const CGFloat* belowComponents = CGColorGetComponents(highestBelowColor.CGColor);
+    CGFloat belowRed = belowComponents[0];
+    CGFloat belowGreen = belowComponents[1];
+    CGFloat belowBlue = belowComponents[2];
+    
+    const CGFloat* aboveComponents = CGColorGetComponents(lowestAboveColor.CGColor);
+    CGFloat aboveRed = aboveComponents[0];
+    CGFloat aboveGreen = aboveComponents[1];
+    CGFloat aboveBlue = aboveComponents[2];
+    
+    CGFloat lerpedRed = (aboveRed - belowRed)*lerpedValue + belowRed;
+    CGFloat lerpedGreen = (aboveGreen - belowGreen)*lerpedValue + belowGreen;
+    CGFloat lerpedBlue = (aboveBlue - belowBlue)*lerpedValue + belowBlue;
+    UIColor *lerpedColor = [UIColor colorWithRed:lerpedRed
+                                           green:lerpedGreen
+                                            blue:lerpedBlue
+                                           alpha:1.0f];
+    
+    return lerpedColor;
+}
+
 - (void)createGradientBackground
 {
-    CAGradientLayer *gradientLayer = [CAGradientLayer layer];
+    _gradient = [CAGradientLayer layer];
     NSArray *colors = [NSArray arrayWithObjects:
                        (id)[[UIColor colorWithRed:215.0f/255.0f green:168.0f/255.0f blue:55.0f/255.0f alpha:1.0f] CGColor],
                        (id)[[UIColor colorWithRed:237.0f/255.0f green:214.0f/255.0f blue:159.0f/255.0f alpha:1.0f] CGColor],
                        nil];
-    [gradientLayer setColors:colors];
+    [_gradient setColors:colors];
     
-    [gradientLayer setStartPoint:CGPointMake(0.0f, 0.0f)];
-    [gradientLayer setEndPoint:CGPointMake(0.0f, 1.0f)];
+    [_gradient setStartPoint:CGPointMake(0.0f, 0.0f)];
+    [_gradient setEndPoint:CGPointMake(0.0f, 1.0f)];
     
-    gradientLayer.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
+    _gradient.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
     
-    [[[self view] layer] insertSublayer:gradientLayer atIndex:0];
+    [[[self view] layer] insertSublayer:_gradient atIndex:0];
 }
 
 - (void)createTimeOffsetArray
 {
     _timeOffsets = [NSMutableArray array];
-    for (int i=1; i<9; i++) {
+    for (int i=1; i<19; i++) {
         NSNumber *offset = [NSNumber numberWithInt:AVERAGE_FALL_ASLEEP_TIME + SLEEPING_CYCLE_TIME*i];
         [_timeOffsets addObject:offset];
     }
@@ -277,6 +367,78 @@ typedef enum {
     frame = _rightTimeLabel.frame;
     [self setAlphaAndSizeForLabel:_rightTimeLabel withRelativePosition:pos];
     [self setNewRelativePosition:pos forObject:_rightTimeLabel];
+    
+    NSInteger leftMinutes = [self getMinutesForIndex:_currentIndex-1];
+    NSInteger centerMinutes = [self getMinutesForIndex:_currentIndex];
+    if (abs(leftMinutes - centerMinutes) > 180) {
+        leftMinutes -= 24*60;
+    }
+    NSInteger rightMinutes = [self getMinutesForIndex:_currentIndex+1];
+    if (abs(centerMinutes - rightMinutes) > 180) {
+        rightMinutes += 24*60;
+    }
+    
+    NSInteger minutesForLerpPosition;
+    NSInteger bottomColorMinute;
+    NSInteger topColorMinute;
+    if (_lerpPosition >= 0.0f) {
+        minutesForLerpPosition = centerMinutes - (centerMinutes - leftMinutes)*_lerpPosition;
+    }
+    else if (_lerpPosition < 0.0f) {
+        minutesForLerpPosition = (rightMinutes - centerMinutes)*(-_lerpPosition) + centerMinutes;
+    }
+    NSInteger minutesInDay = 24*60;
+    
+    NSLog(@"Minute: %d || lerp_pos:%f", minutesForLerpPosition, _lerpPosition);
+    
+    bottomColorMinute = minutesForLerpPosition - 30.0f;
+    if (bottomColorMinute > minutesInDay) {
+        bottomColorMinute %= minutesInDay;
+    }
+    else if (bottomColorMinute < 0) {
+        bottomColorMinute = minutesInDay - bottomColorMinute;
+    }
+    topColorMinute = minutesForLerpPosition + 30.0f;
+    if (topColorMinute > minutesInDay) {
+        topColorMinute %= minutesInDay;
+    }
+    else if (topColorMinute < 0) {
+        topColorMinute = minutesInDay - topColorMinute;
+    }
+    
+    UIColor *bottomColor = [self colorForMinuteValue:bottomColorMinute];
+    UIColor *topColor = [self colorForMinuteValue:topColorMinute];
+    
+    NSArray *colors = [NSArray arrayWithObjects: (id)[bottomColor CGColor], (id)[topColor CGColor], nil];
+    
+    [_gradient setColors:colors];
+    [_gradient setNeedsDisplay];
+}
+
+- (NSInteger)getMinutesForIndex:(NSInteger)index
+{
+    int offset = 0;
+    if (index < 0) {
+        index = 0;
+        offset = -90;
+    }
+    else if (index >= [_timeOffsets count])
+    {
+        index = [_timeOffsets count]-1;
+        offset = 90;
+    }
+    
+    NSInteger minuteOffset = [[_timeOffsets objectAtIndex:index] integerValue];
+    
+    NSDate *date = [NSDate dateWithTimeIntervalSinceNow:minuteOffset*60];
+    NSDateComponents *components = [[NSCalendar currentCalendar] components:NSHourCalendarUnit | NSMinuteCalendarUnit fromDate:date];
+    
+    NSInteger hour= [components hour];
+    NSInteger minute = [components minute];
+    
+    NSInteger computedMinuteValue = hour*60 + minute + offset;
+    
+    return computedMinuteValue;
 }
 
 - (void)setNewRelativePosition:(CGPoint)pos forObject:(UILabel *)label
@@ -362,7 +524,6 @@ typedef enum {
         
         CGFloat cutoff = self.view.frame.size.width*1.6f;
         
-        NSLog(@"xVelocity is: %f || cutoff is: %f", xVelocity, cutoff);
         if (xVelocity > cutoff) {
             _slidingTo = LEFT;
         }
