@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		6C0566D819F99747001B20FF /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 6C0566D719F99747001B20FF /* Default-568h@2x.png */; };
 		6C2C531819F9B87200FA7468 /* ColorMapping.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6C2C531719F9B87200FA7468 /* ColorMapping.plist */; };
+		6C2C531B19FAB36800FA7468 /* SunAndMoonScene.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C2C531A19FAB36800FA7468 /* SunAndMoonScene.m */; };
+		6C2C531E19FAB78E00FA7468 /* moon_mockup.png in Resources */ = {isa = PBXBuildFile; fileRef = 6C2C531C19FAB78E00FA7468 /* moon_mockup.png */; };
+		6C2C532119FAB7E100FA7468 /* sun@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 6C2C532019FAB7E100FA7468 /* sun@2x.png */; };
+		6C2C532319FABD4100FA7468 /* moon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 6C2C532219FABD4100FA7468 /* moon@2x.png */; };
 		6C90CA5C19F8316000D12AF6 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C90CA5B19F8316000D12AF6 /* main.m */; };
 		6C90CA5F19F8316000D12AF6 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C90CA5E19F8316000D12AF6 /* AppDelegate.m */; };
 		6C90CA6219F8316000D12AF6 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C90CA6119F8316000D12AF6 /* ViewController.m */; };
@@ -31,6 +35,11 @@
 /* Begin PBXFileReference section */
 		6C0566D719F99747001B20FF /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		6C2C531719F9B87200FA7468 /* ColorMapping.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = ColorMapping.plist; sourceTree = "<group>"; };
+		6C2C531919FAB36800FA7468 /* SunAndMoonScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SunAndMoonScene.h; sourceTree = "<group>"; };
+		6C2C531A19FAB36800FA7468 /* SunAndMoonScene.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SunAndMoonScene.m; sourceTree = "<group>"; };
+		6C2C531C19FAB78E00FA7468 /* moon_mockup.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = moon_mockup.png; sourceTree = "<group>"; };
+		6C2C532019FAB7E100FA7468 /* sun@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "sun@2x.png"; sourceTree = "<group>"; };
+		6C2C532219FABD4100FA7468 /* moon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "moon@2x.png"; sourceTree = "<group>"; };
 		6C90CA5619F8316000D12AF6 /* SimpleSleep.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimpleSleep.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C90CA5A19F8316000D12AF6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6C90CA5B19F8316000D12AF6 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -90,6 +99,11 @@
 				6C90CA5E19F8316000D12AF6 /* AppDelegate.m */,
 				6C90CA6019F8316000D12AF6 /* ViewController.h */,
 				6C90CA6119F8316000D12AF6 /* ViewController.m */,
+				6C2C531919FAB36800FA7468 /* SunAndMoonScene.h */,
+				6C2C531A19FAB36800FA7468 /* SunAndMoonScene.m */,
+				6C2C531C19FAB78E00FA7468 /* moon_mockup.png */,
+				6C2C532219FABD4100FA7468 /* moon@2x.png */,
+				6C2C532019FAB7E100FA7468 /* sun@2x.png */,
 				6C90CA6319F8316000D12AF6 /* Main.storyboard */,
 				6C90CA6619F8316000D12AF6 /* Images.xcassets */,
 				6C90CA6819F8316000D12AF6 /* LaunchScreen.xib */,
@@ -207,8 +221,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				6C90CA6519F8316000D12AF6 /* Main.storyboard in Resources */,
+				6C2C532319FABD4100FA7468 /* moon@2x.png in Resources */,
+				6C2C531E19FAB78E00FA7468 /* moon_mockup.png in Resources */,
 				6C0566D819F99747001B20FF /* Default-568h@2x.png in Resources */,
 				6C90CA6A19F8316000D12AF6 /* LaunchScreen.xib in Resources */,
+				6C2C532119FAB7E100FA7468 /* sun@2x.png in Resources */,
 				6C2C531819F9B87200FA7468 /* ColorMapping.plist in Resources */,
 				6C90CA6719F8316000D12AF6 /* Images.xcassets in Resources */,
 			);
@@ -228,6 +245,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6C2C531B19FAB36800FA7468 /* SunAndMoonScene.m in Sources */,
 				6C90CA6219F8316000D12AF6 /* ViewController.m in Sources */,
 				6C90CA5F19F8316000D12AF6 /* AppDelegate.m in Sources */,
 				6C90CA5C19F8316000D12AF6 /* main.m in Sources */,

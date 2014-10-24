@@ -7,6 +7,8 @@
 //
 
 #import "ViewController.h"
+#import <SpriteKit/SpriteKit.h>
+#import "SunAndMoonScene.h"
 
 #define CLAMP(x, low, high) ({\
 __typeof__(x) __x = (x); \
@@ -43,12 +45,11 @@ typedef enum {
 
 @property (strong, readwrite) NSArray *colorDataArray;
 
-@property (strong, readwrite) CAGradientLayer *gradient;
-
-@property (strong, readwrite) UIView *sun;
-
 @property (assign, readwrite) bool beingTouched;
 @property (assign, readwrite) SlidingToType slidingTo;
+
+@property (strong, readwrite) SKView *skView;
+@property (strong, readwrite) SunAndMoonScene *sunMoonScene;
 
 @end
 
@@ -61,12 +62,13 @@ typedef enum {
     _lerpPosition = 0.0f;
     _slidingTo = NONE;
     
+    
     [self readColorData];
     [self scheduleUpdates];
-    [self createSun];
-    [self createGradientBackground];
+    [self createSunMoonScene];
     [self createTimeOffsetArray];
     [self createTimeLabels];
+    
 }
 
 - (void)scheduleUpdates
@@ -103,7 +105,7 @@ typedef enum {
                                                 green:[[colors objectAtIndex:1] floatValue]/255.0f
                                                  blue:[[colors objectAtIndex:2] floatValue]/255.0f alpha:1.0f];
         }
-        else if (time > minuteValue && (lowestAbove == -1 || time < lowestAbove))
+        else if (time >= minuteValue && (lowestAbove == -1 || time < lowestAbove))
         {
             lowestAbove = time;
             lowestAboveColor = [UIColor colorWithRed:[[colors objectAtIndex:0] floatValue]/255.0f
@@ -160,23 +162,6 @@ typedef enum {
     return lerpedColor;
 }
 
-- (void)createGradientBackground
-{
-    _gradient = [CAGradientLayer layer];
-    NSArray *colors = [NSArray arrayWithObjects:
-                       (id)[[UIColor colorWithRed:215.0f/255.0f green:168.0f/255.0f blue:55.0f/255.0f alpha:1.0f] CGColor],
-                       (id)[[UIColor colorWithRed:237.0f/255.0f green:214.0f/255.0f blue:159.0f/255.0f alpha:1.0f] CGColor],
-                       nil];
-    [_gradient setColors:colors];
-    
-    [_gradient setStartPoint:CGPointMake(0.0f, 0.0f)];
-    [_gradient setEndPoint:CGPointMake(0.0f, 1.0f)];
-    
-    _gradient.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
-    
-    [[[self view] layer] insertSublayer:_gradient atIndex:0];
-}
-
 - (void)createTimeOffsetArray
 {
     _timeOffsets = [NSMutableArray array];
@@ -186,30 +171,14 @@ typedef enum {
     }
 }
 
-- (void)createSun
+- (void)createSunMoonScene
 {
-    int diameter = 100;
+    _skView = [[SKView alloc]initWithFrame:self.view.frame];
     
-    _sun = [[UIView alloc] initWithFrame:CGRectMake(0,0,diameter,diameter)];
+    _sunMoonScene = [[SunAndMoonScene alloc] initWithSize:self.view.frame.size];
+    [_skView presentScene:_sunMoonScene];
     
-    CGPoint pos = CGPointMake(0.5f, 0.43f);
-    [self moveSunToRelativePosition:pos];
-    
-    _sun.alpha = 1.0f;
-    _sun.layer.cornerRadius = diameter/2.0f;
-    _sun.backgroundColor = [UIColor colorWithRed:255.0f/255.0f green:221.0f/255.0f blue:34.0f/255.0f alpha:1.0f];
-    
-    [self.view insertSubview:_sun atIndex:0];
-}
-
-- (void)moveSunToRelativePosition:(CGPoint)position
-{
-    CGSize viewSize = self.view.frame.size;
-    
-    _sun.frame = CGRectMake(position.x*viewSize.width - _sun.frame.size.width/2.0f,
-                            position.y*viewSize.height - _sun.frame.size.height/2.0f,
-                            _sun.frame.size.width,
-                            _sun.frame.size.height);
+    [self.view insertSubview:_skView atIndex:0];
 }
 
 - (void)createTimeLabels
@@ -389,30 +358,28 @@ typedef enum {
     }
     NSInteger minutesInDay = 24*60;
     
-    NSLog(@"Minute: %d || lerp_pos:%f", minutesForLerpPosition, _lerpPosition);
+    //NSLog(@"Minute: %ld || lerp_pos:%f", (long)minutesForLerpPosition, _lerpPosition);
     
-    bottomColorMinute = minutesForLerpPosition - 30.0f;
-    if (bottomColorMinute > minutesInDay) {
-        bottomColorMinute %= minutesInDay;
-    }
-    else if (bottomColorMinute < 0) {
-        bottomColorMinute = minutesInDay - bottomColorMinute;
-    }
-    topColorMinute = minutesForLerpPosition + 30.0f;
+    topColorMinute = minutesForLerpPosition - 30.0f;
     if (topColorMinute > minutesInDay) {
         topColorMinute %= minutesInDay;
     }
     else if (topColorMinute < 0) {
         topColorMinute = minutesInDay - topColorMinute;
     }
+    bottomColorMinute = minutesForLerpPosition + 30.0f;
+    if (bottomColorMinute > minutesInDay) {
+        bottomColorMinute %= minutesInDay;
+    }
+    else if (bottomColorMinute < 0) {
+        bottomColorMinute = minutesInDay - bottomColorMinute;
+    }
     
     UIColor *bottomColor = [self colorForMinuteValue:bottomColorMinute];
     UIColor *topColor = [self colorForMinuteValue:topColorMinute];
     
-    NSArray *colors = [NSArray arrayWithObjects: (id)[bottomColor CGColor], (id)[topColor CGColor], nil];
-    
-    [_gradient setColors:colors];
-    [_gradient setNeedsDisplay];
+    [_sunMoonScene updateGradientWithTopColor:topColor andBottomColor:bottomColor];
+    [_sunMoonScene updateWithMinute:minutesForLerpPosition];
 }
 
 - (NSInteger)getMinutesForIndex:(NSInteger)index
