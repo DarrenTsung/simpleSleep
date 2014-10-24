@@ -45,6 +45,7 @@ typedef enum {
 
 @property (strong, readwrite) NSArray *colorDataArray;
 
+@property (assign, readwrite) bool recomputeTouchStartPosition;
 @property (assign, readwrite) bool beingTouched;
 @property (assign, readwrite) SlidingToType slidingTo;
 
@@ -58,10 +59,12 @@ typedef enum {
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    self.view.multipleTouchEnabled = NO;
+    self.view.exclusiveTouch = YES;
     
     _lerpPosition = 0.0f;
     _slidingTo = NONE;
-    
+    _recomputeTouchStartPosition = FALSE;
     
     [self readColorData];
     [self scheduleUpdates];
@@ -300,24 +303,26 @@ typedef enum {
         
         _lerpPosition += delta*vel;
         _lerpPosition = CLAMP(_lerpPosition, -1.0f, 1.0f);
-        
-        if (fabs(_lerpPosition) >= 1.0f)
+    }
+    
+    if (fabs(_lerpPosition) >= 1.0f)
+    {
+        if (_lerpPosition >= 1.0f && _currentIndex > 0)
         {
-            if (_lerpPosition >= 1.0f && _currentIndex > 0)
-            {
-                _currentIndex--;
-                _lerpPosition = 0.0f;
-            }
-            else if (_lerpPosition <= -1.0f && _currentIndex < [_timeOffsets count]-1)
-            {
-                _currentIndex++;
-                _lerpPosition = 0.0f;
-            }
-            [self updateTimeLabels:nil];
-            [self updateOffsetLabelToIndex:_currentIndex];
-            
-            _slidingTo = NONE;
+            _currentIndex--;
+            _lerpPosition = 0.0f;
         }
+        else if (_lerpPosition <= -1.0f && _currentIndex < [_timeOffsets count]-1)
+        {
+            _currentIndex++;
+            _lerpPosition = 0.0f;
+        }
+        [self updateTimeLabels:nil];
+        [self updateOffsetLabelToIndex:_currentIndex];
+        
+        _slidingTo = NONE;
+        _grabbedLerpPosition = _lerpPosition;
+        _recomputeTouchStartPosition = TRUE;
     }
 }
 
@@ -469,8 +474,13 @@ typedef enum {
     {
         CGPoint loc = [touch locationInView:self.view];
         
+        if (_recomputeTouchStartPosition) {
+            _startingTouchPosition = loc;
+            _recomputeTouchStartPosition = FALSE;
+        }
+        
         CGFloat xDiff = loc.x - _startingTouchPosition.x;
-        CGFloat interpolatedDiff = CLAMP(xDiff / (0.55f*[self.view frame].size.width), -1.0f, 1.0f);
+        CGFloat interpolatedDiff = xDiff / (0.55f*[self.view frame].size.width);
         
         if (interpolatedDiff > 0 && _currentIndex == 0)
             interpolatedDiff /= 2.5f;
